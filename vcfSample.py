@@ -10,7 +10,7 @@ def get_args():
 fix_segs\n\
 author: " + __author__ + "\n\
 version: " + __version__ + "\n\
-description: Fix norm.short CNV segment files (ensure consective segments are continuous")
+description: Extract samples from a gVCF file.")
     parser.add_argument('-i', '--input', type=argparse.FileType('r'), required=False, default=None, help="Input VCF file [stdin]")
     parser.add_argument('-o', '--output', type=argparse.FileType('w'), required=False, default=sys.stdout, help="Output file [stdout]")
     parser.add_argument('-s', '--samples', type=str, nargs='+', required=True, help="List of samples to extract GTs from (space delimited)")
@@ -45,7 +45,7 @@ def read_vcf(vcf_file):
 
             else:
                 in_header = False
-                
+
         rows.append(line.rstrip().split('\t'))
 
     return header, samples, rows
