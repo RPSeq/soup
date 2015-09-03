@@ -86,9 +86,9 @@ def compare(infile):
             #increment total counts for each GT type
             if call.mob_gts[i] == "0/1":
                 het_count[i] += 1
-            elif call.mob_gts[i] == "1/1":
+            if call.mob_gts[i] == "1/1":
                 hom_alt_count[i] += 1
-            elif call.mob_gts[i] == "0/0":
+            if call.mob_gts[i] == "0/0":
                 hom_ref_count[i] += 1
             #get match counts for each GT type
             if call.mob_gts[i] == call.mob_gts[i]:
@@ -123,8 +123,6 @@ def compare(infile):
     #need to calculate aggregate numbers and
     #present results in a format that will facilitate downstream R plotting.
     #really ryan, using enumerate? huh.
-    for i, sample in enumerate(sample_index):
-
 
 
 
