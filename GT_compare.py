@@ -56,7 +56,7 @@ def compare(infile):
     #should use a single counter object or dict/hash but fuck it. cowboy coding day
     #count list format: [NA12878, NA12889, NA12890]
 
-    sample_index = [NA12878, NA12889, NA12890]
+    sample_index = ["NA12878", "NA12889", "NA12890"]
 
     #total counts   
     het_count = [0,0,0]
@@ -79,10 +79,9 @@ def compare(infile):
     hom_ref_VS_het = [0,0,0]
     hom_ref_VS_hom_alt = [0,0,0]
 
-
     #yay more terrible code. so many redundant comparisons. <33% efficient but hey, it'll work.
     for call in callset:
-        for i in range(len(sample_index))
+        for i in range(len(sample_index)):
             #increment total counts for each GT type
             if call.mob_gts[i] == "0/1":
                 het_count[i] += 1
@@ -91,7 +90,7 @@ def compare(infile):
             if call.mob_gts[i] == "0/0":
                 hom_ref_count[i] += 1
             #get match counts for each GT type
-            if call.mob_gts[i] == call.mob_gts[i]:
+            if call.mob_gts[i] == call.kg_gts[i]:
                 if call.mob_gts[i] == "0/1":
                     het_match[i] += 1
                 elif call.mob_gts[i] == "1/1":
@@ -120,14 +119,36 @@ def compare(infile):
                         hom_ref_VS_het[i]+=1
 
     #now we've calculated all the fine-grain counts. 
-    #need to calculate aggregate numbers and
-    #present results in a format that will facilitate downstream R plotting.
-    #really ryan, using enumerate? huh.
+    #need to calculate percentages and present results in
+    # a format that will facilitate downstream R plotting.
 
+    #probably:  SAMPLE_NAME<\t>INFO_TYPE<\t>PERCENTAGE
+    for i,sample in enumerate(sample_index):
 
+        het_match_percent = (het_match[i]/float(het_count[i]))*100
+        hom_alt_match_percent = (hom_alt_match[i]/float(hom_alt_count[i]))*100
+        hom_ref_match_percent = (hom_ref_match[i]/float(hom_ref_count[i]))*100
 
+        #make sure these complement (100-percentA == percentB)
+        het_V_homA_percent = (het_VS_hom_alt[i]/float(het_VS_hom_alt[i]+het_VS_hom_ref[i]))*100
+        het_V_homR_percent = (het_VS_hom_ref[i]/float(het_VS_hom_alt[i]+het_VS_hom_ref[i]))*100
 
-#test
+        homA_V_het_percent = (hom_alt_VS_het[i]/float(hom_alt_VS_het[i]+hom_alt_VS_hom_ref[i]))*100
+        homA_V_homR_percent = (hom_alt_VS_hom_ref[i]/float(hom_alt_VS_het[i]+hom_alt_VS_hom_ref[i]))*100
+
+        homR_V_het_percent = (hom_ref_VS_het[i]/float(hom_ref_VS_hom_alt[i]+hom_ref_VS_het[i]))*100
+        homR_B_homA_percent = (hom_ref_VS_hom_alt[i]/float(hom_ref_VS_hom_alt[i]+hom_ref_VS_het[i]))*100
+
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_match", het_match_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "hom_alt_match", hom_alt_match_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "hom_ref_match", hom_ref_match_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_V_homA", het_V_homA_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_V_homR", het_V_homR_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homA_V_het", homA_V_het_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homA_V_homR", homA_V_homR_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homR_V_het", homR_V_het_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homR_V_homA", homR_B_homA_percent))
+
 class GT(object):
     def __init__(self, entry):
         self.type_match = False
