@@ -50,8 +50,15 @@ def compare(infile):
 
     #here's some bad hardcoded stuff. gets 'er done though
     #if i ever need to do this on more samples, this will be a pain to change.
-    #count list format: NA12878, NA12889, NA12890
-    #total counts
+    
+
+    #lets initialize a shitload of lists to hardcoded 0s. this is probably the worst code i've ever written.
+    #should use a single counter object or dict/hash but fuck it. cowboy coding day
+    #count list format: [NA12878, NA12889, NA12890]
+
+    sample_index = [NA12878, NA12889, NA12890]
+
+    #total counts   
     het_count = [0,0,0]
     hom_alt_count = [0,0,0]
     hom_ref_count = [0,0,0]
@@ -61,9 +68,28 @@ def compare(infile):
     hom_alt_match = [0,0,0]
     hom_ref_match = [0,0,0]
 
-    #yay more terrible code. way too many nested if elifs.
+    #all possible mismatch types to be counted. 
+    #this way I can tell how MobTyper is biased relative to the 1kg phase3 callset.
+    het_VS_hom_alt = [0,0,0]
+    het_VS_hom_ref = [0,0,0]
+
+    hom_alt_VS_het = [0,0,0]
+    hom_alt_VS_hom_ref = [0,0,0]
+
+    hom_ref_VS_het = [0,0,0]
+    hom_ref_VS_hom_alt = [0,0,0]
+
+
+    #yay more terrible code. so many redundant comparisons. <33% efficient but hey, it'll work.
     for call in callset:
-        for i in range(3):
+        for i in range(len(sample_index))
+            #increment total counts for each GT type
+            if call.mob_gts[i] == "0/1":
+                het_count[i] += 1
+            elif call.mob_gts[i] == "1/1":
+                hom_alt_count[i] += 1
+            elif call.mob_gts[i] == "0/0":
+                hom_ref_count[i] += 1
             #get match counts for each GT type
             if call.mob_gts[i] == call.mob_gts[i]:
                 if call.mob_gts[i] == "0/1":
@@ -73,13 +99,35 @@ def compare(infile):
                 elif call.mob_gts[i] == "0/0":
                     hom_ref_match[i] += 1
 
-            #also increment total counts for each GT type
-            if call.mob_gts[i] == "0/1":
-                het_count[i] += 1
-            elif call.mob_gts[i] == "1/1":
-                hom_alt_count[i] += 1
-            elif call.mob_gts[i] == "0/0":
-                hom_ref_count[i] += 1
+            #if mismatch, determine the type of mismatch
+            else:
+                if call.mob_gts[i] == "0/1":
+                    if call.kg_gts[i] == "0/0":
+                        het_VS_hom_ref[i]+=1
+                    elif call.kg_gts[i] == "1/1":
+                        het_VS_hom_alt[i]+=1
+
+                elif call.mob_gts[i] == "1/1":
+                    if call.kg_gts[i] == "0/0":
+                        hom_alt_VS_hom_ref[i]+=1
+                    elif call.kg_gts[i] == "0/1":
+                        hom_alt_VS_het[i]+=1
+
+                elif call.mob_gts[i] == "0/0":
+                    if call.kg_gts[i] == "1/1":
+                        hom_ref_VS_hom_alt[i]+=1
+                    elif call.kg_gts[i] == "0/1":
+                        hom_ref_VS_het[i]+=1
+
+    #now we've calculated all the fine-grain counts. 
+    #need to calculate aggregate numbers and
+    #present results in a format that will facilitate downstream R plotting.
+    #really ryan, using enumerate? huh.
+    for i, sample in enumerate(sample_index):
+
+
+
+
 
 #test
 class GT(object):
