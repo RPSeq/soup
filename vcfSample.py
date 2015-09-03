@@ -67,6 +67,8 @@ def extract_gts(vcf_file, sample_list, output):
         output.write(line)
     #write sample header
     output.write('\t'.join(sample_header[:9])+'\t'+'\t'.join(sample_list)+'\n')
+    
+    #write var info and extract requested sample columns.
     for var in variants:
         output.write('\t'.join(var[:9])+'\t'+'\t'.join([var[x] for x in sample_columns])+'\n')
 
