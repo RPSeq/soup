@@ -139,15 +139,15 @@ def compare(infile):
         homR_V_het_percent = (hom_ref_VS_het[i]/float(hom_ref_VS_hom_alt[i]+hom_ref_VS_het[i]))*100
         homR_B_homA_percent = (hom_ref_VS_hom_alt[i]/float(hom_ref_VS_hom_alt[i]+hom_ref_VS_het[i]))*100
 
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_match", het_match_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "hom_alt_match", hom_alt_match_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "hom_ref_match", hom_ref_match_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_V_homA", het_V_homA_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "het_V_homR", het_V_homR_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homA_V_het", homA_V_het_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homA_V_homR", homA_V_homR_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homR_V_het", homR_V_het_percent))
-        sys.stderr.write("{0}\t{1}\t{2:.2f}\n".format(sample, "homR_V_homA", homR_B_homA_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "het_match", het_match_percent, het_match[i], het_count[i]))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "hom_alt_match", hom_alt_match_percent, ))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "hom_ref_match", hom_ref_match_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "het_V_homA", het_V_homA_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "het_V_homR", het_V_homR_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "homA_V_het", homA_V_het_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "homA_V_homR", homA_V_homR_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "homR_V_het", homR_V_het_percent))
+        sys.stderr.write("{0}\t{1}\t{2:.2f}\t{3},{4}\n".format(sample, "homR_V_homA", homR_B_homA_percent))
 
 class GT(object):
     def __init__(self, entry):
