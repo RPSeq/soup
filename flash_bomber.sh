@@ -37,7 +37,8 @@ bgmod -L 40 /rsmith/flash
 # for SAMPLE in $SAMPLES; do
 #     FQ1=${SINGLE_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
 #     FQ2=${SINGLE_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
-#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
+#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
+#      -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
 #     "bash ${SRC}/flash.sh -d ${SINGLE_OUT} -s $SAMPLE $FQ1 $FQ2"
 # done
 
@@ -51,7 +52,8 @@ bgmod -L 40 /rsmith/flash
 # for SAMPLE in $SAMPLES; do
 #     FQ1=${BULK_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
 #     FQ2=${BULK_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
-#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long -o ${BULK_LOGS}/${SAMPLE}.out -e ${BULK_LOGS}/${SAMPLE}.err \
+#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
+#     -o ${BULK_LOGS}/${SAMPLE}.out -e ${BULK_LOGS}/${SAMPLE}.err \
 #     "bash ${SRC}/flash.sh -d ${BULK_OUT} -s $SAMPLE $FQ1 $FQ2"
 # done
 
@@ -59,11 +61,12 @@ bgmod -L 40 /rsmith/flash
 ###single
 ################################################
 
-Grab sample names for single sequencing
+#Grab sample names for single sequencing
 SAMPLES=$(ls $SINGLE_IN | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq)
 for SAMPLE in $SAMPLES; do
     FQ1=${SINGLE_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
     FQ2=${SINGLE_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
-    bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
+    bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
+    -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
     "bash ${SRC}/flash.sh -d ${SINGLE_OUT} -s $SAMPLE $FQ1 $FQ2"
 done
