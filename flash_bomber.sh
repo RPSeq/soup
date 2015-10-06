@@ -8,18 +8,14 @@
 ###################################################################
 
 #INPUT FILE DIRS
-INPUT=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/FASTQ/original
-SINGLE_IN=${INPUT}/single
-BULK_IN=${INPUT}/bulk
+FASTQ=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/data/FASTQ
+SINGLE_IN=${FASTQ}/single
+BULK_IN=${FASTQ}/bulk
 
 #OUTPUT DIRS
-OUTPUT_DIR=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/FASTQ/flash
-BULK_OUT=${OUTPUT_DIR}/bulk
-SINGLE_OUT=${OUTPUT_DIR}/single
-
-#LOG DIRS
-BULK_LOGS=${OUTPUT_DIR}/bulk_logs
-SINGLE_LOGS=${OUTPUT_DIR}/single_logs
+BAM=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/data/BAM
+BULK_OUT=${BAM}/bulk
+SINGLE_OUT=${BAM}/single
 
 #project src directory
 SRC=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/src
@@ -28,45 +24,63 @@ SRC=/gscmnt/gc2802/halllab/rsmith/Hippocampal_L1/src
 bgmod -L 40 /rsmith/flash
 
 ################################################
-###test
-################################################
-
-#test on one small single sample
-# SAMPLES=("Cortex.Single.WGS.CTRL-45.Neuron-#4")
-
-# for SAMPLE in $SAMPLES; do
-#     FQ1=${SINGLE_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
-#     FQ2=${SINGLE_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
-#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
-#      -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
-#     "bash ${SRC}/flash.sh -d ${SINGLE_OUT} -s $SAMPLE $FQ1 $FQ2"
-# done
-
-################################################
 ###bulk
 ################################################
 
-#Grab sample names for bulk sequencing
-# SAMPLES=$(ls $BULK_IN | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq)
 
-# for SAMPLE in $SAMPLES; do
-#     FQ1=${BULK_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
-#     FQ2=${BULK_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
-#     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
-#     -o ${BULK_LOGS}/${SAMPLE}.out -e ${BULK_LOGS}/${SAMPLE}.err \
-#     "bash ${SRC}/flash.sh -d ${BULK_OUT} -s $SAMPLE $FQ1 $FQ2"
-# done
+INPUT=$BULK_IN
+BAM_DIR=$BULK_OUT
+#all bulk samples
+SAMPLES=`ls $INPUT | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq`
+for SAMPLE in $SAMPLES; do
+    # set sample specific variables
+    #   input fastq.gz files:
+    FQ1=${INPUT}/${SAMPLE}.s_1_1_sequence.txt.gz;
+    FQ2=${INPUT}/${SAMPLE}.s_1_2_sequence.txt.gz;
+    # output dir:
+    OUTPUT=${BAM_DIR}/${SAMPLE}
+    # logs dir:
+    LOGS=${BAM_DIR}/${SAMPLE}/logs
+
+    if [ ! -d $LOGS ]
+    then
+        mkdir -p $LOGS
+    fi
+
+    bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
+     -o ${LOGS}/${SAMPLE}.out -e ${LOGS}/${SAMPLE}.err \
+    "bash ${SRC}/flash.sh -d $OUTPUT -l $LOGS -s $SAMPLE $FQ1 $FQ2"
+done
 
 ################################################
 ###single
 ################################################
 
-#Grab sample names for single sequencing
-SAMPLES=$(ls $SINGLE_IN | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq)
+#test on one small single sample
+INPUT=$SINGLE_IN
+BAM_DIR=$SINGLE_OUT
+
+# test on smallest sample
+#SAMPLES=("Cortex.Single.WGS.CTRL-45.Neuron-#4")
+
+#all single cell samples
+SAMPLES=`ls $INPUT | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq`
 for SAMPLE in $SAMPLES; do
-    FQ1=${SINGLE_IN}/${SAMPLE}.s_1_1_sequence.txt.gz;
-    FQ2=${SINGLE_IN}/${SAMPLE}.s_1_2_sequence.txt.gz;
+    # set sample specific variables
+    #   input fastq.gz files:
+    FQ1=${INPUT}/${SAMPLE}.s_1_1_sequence.txt.gz;
+    FQ2=${INPUT}/${SAMPLE}.s_1_2_sequence.txt.gz;
+    # output dir:
+    OUTPUT=${BAM_DIR}/${SAMPLE}
+    # logs dir:
+    LOGS=${BAM_DIR}/${SAMPLE}/logs
+
+    if [ ! -d $LOGS ]
+    then
+        mkdir -p $LOGS
+    fi
+
     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
-    -o ${SINGLE_LOGS}/${SAMPLE}.out -e ${SINGLE_LOGS}/${SAMPLE}.err \
-    "bash ${SRC}/flash.sh -d ${SINGLE_OUT} -s $SAMPLE $FQ1 $FQ2"
+     -o ${LOGS}/${SAMPLE}.out -e ${LOGS}/${SAMPLE}.err \
+    "bash ${SRC}/flash.sh -d $OUTPUT -l $LOGS -s $SAMPLE $FQ1 $FQ2"
 done
