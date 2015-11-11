@@ -47,7 +47,7 @@ for SAMPLE in $SAMPLES; do
         mkdir -p $LOGS
     fi
 
-    bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
+    bomb -t 8 -m 10 -J $SAMPLE -g /rsmith/flash -q long \
      -o ${LOGS}/${SAMPLE}.out -e ${LOGS}/${SAMPLE}.err \
     "bash ${SRC}/flash.sh -d $OUTPUT -l $LOGS -s $SAMPLE $FQ1 $FQ2"
 done
@@ -61,7 +61,7 @@ INPUT=$SINGLE_IN
 BAM_DIR=$SINGLE_OUT
 
 # test on smallest sample
-#SAMPLES=("Cortex.Single.WGS.CTRL-45.Neuron-#4")
+# SAMPLES=("Cortex.Single.WGS.CTRL-45.Neuron-#4")
 
 #all single cell samples
 SAMPLES=`ls $INPUT | sed -e 's/.s_1_._sequence.txt.gz//g' | uniq`
@@ -82,5 +82,5 @@ for SAMPLE in $SAMPLES; do
 
     bomb -t 8 -m 16 -J $SAMPLE -g /rsmith/flash -q long \
      -o ${LOGS}/${SAMPLE}.out -e ${LOGS}/${SAMPLE}.err \
-    "bash ${SRC}/flash.sh -d $OUTPUT -l $LOGS -s $SAMPLE $FQ1 $FQ2"
+    "bash ${SRC}/flash.sh -t -d $OUTPUT -l $LOGS -s $SAMPLE $FQ1 $FQ2"
 done

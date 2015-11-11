@@ -31,9 +31,11 @@ set -e
 #Help function
 function HELP {
   echo -e \
-  "\nUsage: bash ${SCRIPT} -o [output] -s [sample] [fastq1.gz fastq2.gz]
-                      -o <output dir> 
-                      -s <sample name>\n" >&2
+  "\nUsage: bash ${SCRIPT} -d [output] -s [sample] -l [log] [fastq1.gz fastq2.gz]
+                      -d <output dir> 
+                      -s <sample name>
+                      -l <logs dir>
+                      -t <trim MALBAC Bst primers>\n" >&2
   exit 1
 }
 
@@ -48,11 +50,12 @@ SAMPLE=false
 FQ1=false
 FQ2=false
 LOGS=false
+TRIM=false
 
 ###hard coded values: these are not likely to change.
 REF=/gscmnt/gc2719/halllab/genomes/human/GRCh37/hs37_ebv/hs37_ebv.fasta
 
-while getopts :d:s:l:h FLAG; do
+while getopts :d:s:l:th FLAG; do
   case $FLAG in
     d)
       OUTPUT_DIR=$OPTARG
@@ -62,6 +65,9 @@ while getopts :d:s:l:h FLAG; do
       ;;
     l)
       LOGS=$OPTARG
+      ;;
+    t)
+      TRIM=true
       ;;
     h)
       HELP
@@ -137,12 +143,42 @@ read MEAN STDEV <<<$( bwa mem -t 8 -M $REF $FQ1 $FQ2 | samblaster -r |
 
 RLEN=$( zcat $FQ1 | sed -n '2~4p' | head -n 5000 | awk 'length($0)>x{x=length($0)};END{print x}' );
 
-flash -z -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
+#to generate just the merged FASTQ contigs:
+# if $TRIM; then
+# echo -e "Trim mode\n"
+# BST5="^GTGAGTGATGGTTGAGGTCTTGTGGAG"
+# BST3="CTCCACAAGACCTCAACCATCACTCAC$"
+# flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
+# 2> >(tee  >(grep 'statistics' -A 7 > ${LOGS}/${SAMPLE}.flashstats)  >&2) | \
+#     cutadapt -g $BST5 -a $BST3 -m 35 - 2> ${LOGS}/${SAMPLE}.cutadapt_log > ${OUTPUT_DIR}/${SAMPLE}.fq
+# else
+# echo -e "No trim\n"
+# flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
+# 2> >(tee  >(grep 'statistics' -A 7 > ${LOGS}/${SAMPLE}.flashstats)  >&2) > ${OUTPUT_DIR}/${SAMPLE}.fq
+# fi
+
+#normal behavior
+if $TRIM; then
+echo -e "########\nBst Filter ON\n########"
+BST5="GTGAGTGATGGTTGAGGTCTTGTGGAG"
+BST3="CTCCACAAGACCTCAACCATCACTCAC"
+flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
+2> >(tee  >(grep 'statistics' -A 7 > ${LOGS}/${SAMPLE}.flashstats)  >&2) | \
+    cutadapt -g $BST5 -a $BST3 -m 100 - 2> ${LOGS}/${SAMPLE}.cutadapt_log | \
+      cutadapt -g $BST5 -a $BST3 --discard-trimmed - 2>> ${LOGS}/${SAMPLE}.cutadapt_log | \
+        bwa mem -t 8 $REF /dev/stdin | samblaster | \
+          sambamba view -S -f bam -l 0 /dev/stdin | \
+            sambamba sort -t 8 -m 2G --tmpdir=${TEMP_DIR}/full \
+            -o ${OUTPUT_DIR}/${SAMPLE}.bam /dev/stdin;
+else
+echo -e "########\nBst Filter OFF\n########"
+flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
 2> >(tee  >(grep 'statistics' -A 7 > ${LOGS}/${SAMPLE}.flashstats)  >&2) | \
     bwa mem -t 8 $REF /dev/stdin | samblaster | \
       sambamba view -S -f bam -l 0 /dev/stdin | \
         sambamba sort -t 8 -m 2G --tmpdir=${TEMP_DIR}/full \
         -o ${OUTPUT_DIR}/${SAMPLE}.bam /dev/stdin;
+fi
 
 sambamba index ${OUTPUT_DIR}/${SAMPLE}.bam;
 
