@@ -16,7 +16,7 @@ SCRIPT=`basename ${BASH_SOURCE[0]}`
 
 #Make sure script exits if any command crashes
 #   This should prevent jobs from hanging in RUN state 
-#   on LSF when a command crashes but the bash script doesn't exit.
+#   on LSF when a command crashes but the bash script does  n't exit.
 set -e
 
 ####################################
@@ -54,6 +54,7 @@ TRIM=false
 
 ###hard coded values: these are not likely to change.
 REF=/gscmnt/gc2719/halllab/genomes/human/GRCh37/hs37_ebv/hs37_ebv.fasta
+parseBam=/gscmnt/gc2719/halllab/users/rsmith/git/Dee/parseBam
 
 while getopts :d:s:l:th FLAG; do
   case $FLAG in
@@ -167,7 +168,7 @@ flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
     cutadapt -g $BST5 -a $BST3 -m 100 - 2> ${LOGS}/${SAMPLE}.cutadapt_log | \
       cutadapt -g $BST5 -a $BST3 --discard-trimmed - 2>> ${LOGS}/${SAMPLE}.cutadapt_log | \
         bwa mem -t 8 $REF /dev/stdin | samblaster | \
-          sambamba view -S -f bam -l 0 /dev/stdin | \
+          sambamba view -S -f bam -l 0 /dev/stdin | $parseBam -t 2 -i /dev/stdin -l 0 | \
             sambamba sort -t 8 -m 2G --tmpdir=${TEMP_DIR}/full \
             -o ${OUTPUT_DIR}/${SAMPLE}.bam /dev/stdin;
 else
@@ -175,7 +176,7 @@ echo -e "########\nBst Filter OFF\n########"
 flash -t 8 -c -r $RLEN -s $STDEV -f $MEAN <(zcat $FQ1) <(zcat $FQ2) \
 2> >(tee  >(grep 'statistics' -A 7 > ${LOGS}/${SAMPLE}.flashstats)  >&2) | \
     bwa mem -t 8 $REF /dev/stdin | samblaster | \
-      sambamba view -S -f bam -l 0 /dev/stdin | \
+      sambamba view -S -f bam -l 0 /dev/stdin | $parseBam -t 2 -i /dev/stdin -l 0 | \
         sambamba sort -t 8 -m 2G --tmpdir=${TEMP_DIR}/full \
         -o ${OUTPUT_DIR}/${SAMPLE}.bam /dev/stdin;
 fi
@@ -184,6 +185,7 @@ sambamba index ${OUTPUT_DIR}/${SAMPLE}.bam;
 
 samtools flagstat ${OUTPUT_DIR}/${SAMPLE}.bam > ${LOGS}/${SAMPLE}.flagstats;
 
+#this is potentially dangerous.
 rm -rf $TEMP_DIR
 exit 0
 
