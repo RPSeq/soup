@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+import sys, string
+
+def complement(seq):
+    """Returns complemented DNA seq"""
+    return seq.translate(string.maketrans('TCAG', 'AGTC'))
+
+# T and G conversions will be 'flipped'
+norms = ('T', 'G')
+
+# write the header
+sys.stdout.write(sys.stdin.next())
+
+# loop over stdin
+for line in sys.stdin:
+
+    context, conv, chrom, pos, expt = line.split("\t")
+
+    if conv[0] in norms:
+
+        conv = complement(conv)
+
+        context = complement(context)[::-1]
+
+    sys.stdout.write("\t".join([context, conv, chrom, pos, expt]))
